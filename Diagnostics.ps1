@@ -403,7 +403,7 @@ function formatUSB{
 }
 
 
-# z *****************************
+# M *****************************
 function clearResults {
         param (
             [string]$phase
@@ -494,7 +494,7 @@ while($Value -ne 'x')
   Write-Host "* [7] Storage                    [G]                           *"
   Write-Host "* [8] Camera                     [H]                           *"
   Write-Host "* [9] Autopilot                                                *"
-  Write-Host "*                                [Z] Clear Results Report      *"
+  Write-Host "*                                [M] Clear Results Report      *"
   Write-Host "* [X] eXit                       [R] Show Test Results         *"
   Write-Host "****************************************************************" -F DarkMagenta
   Write-Host "                                                GedeAlm 2025/07 " -F DarkMagenta 
@@ -583,7 +583,7 @@ while($Value -ne 'x')
 
         }
 
-       'z' {
+       'm' {
             #'TestResults'
 			clearResults -phase "clearall"
 
