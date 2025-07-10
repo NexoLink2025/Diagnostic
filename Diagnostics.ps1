@@ -76,7 +76,10 @@ function getdisplay {
 
     Write-Host "  ==> Starting Checking Display"
 
-    cmd /c start /wait "https://testmyscreen.com/"
+    #cmd /c start  "https://testmyscreen.com/" -Wait
+    Start-Process -FilePath "chrome.exe" -ArgumentList "https://testmyscreen.com/" -Wait
+
+    #Start-Process -FilePath "https://keyboard-tester.com/swedish-keyboard" -Wait
 
     Write-Host ""
     $displayresult = Read-Host "      Was Display checking OK [Y/N] ?"
@@ -94,8 +97,9 @@ function getkeyboard {
 
     Clear-Host
     Write-Host "  ==> Starting Checking Keyboard"
-    #Start-Process "https://keyboard-tester.com/swedish-keyboard" -Wait
-    cmd /c start /wait "https://keyboard-tester.com/swedish-keyboard"
+
+    #cmd /c start /wait "https://keyboard-tester.com/swedish-keyboard"
+    Start-Process -FilePath "chrome.exe" -ArgumentList "https://keyboard-tester.com/swedish-keyboard" -Wait
 
     Write-Host ""
     $keybopardresult = Read-Host "      Was Keyboard checking OK [Y/N] ?"
@@ -150,7 +154,8 @@ function getcpustress {
             Write-Host "      Save images as : OCCT_1.png  / OCCT_2.png  / OCCT_3.png "
             Write-Host " "
             Write-Host "      Wait until program loads... "
-            & $location"\tools\StressTest\OCCT\OCCT.exe"
+            #& $location"\tools\StressTest\OCCT\OCCT.exe"
+            Start-Process -FilePath $location"\tools\StressTest\OCCT\OCCT.exe"  -Wait 
             $test= $true
 
               # Get-ChildItem  -Name '*.png'
@@ -158,15 +163,16 @@ function getcpustress {
         '2' {
             Write-Host "  ==> Starting Prime95 tests"
             Write-Host "      Wait until program loads... "
-            & $location"\tools\StressTest\Prime95\prime95.exe"
+            #& $location"\tools\StressTest\Prime95\prime95.exe"
+            Start-Process -FilePath $location"\tools\StressTest\Prime95\prime95.exe" -verb runas -Wait  
             $test= $true
         }
         '3' {
             Write-Host "  ==> Starting CPUSTRES64 tests"
             Write-Host "      Wait until program loads... "
-            & $location"\tools\SystemInternals\CPUSTRES64.EXE"
-            # Start-Process $location"\tools\SystemInternals\CPUSTRES64.EXE" -NoNewWindow -Wait
-            #cmd /c start /wait $location"\tools\SystemInternals\CPUSTRES64.EXE" 
+            #& $location"\tools\SystemInternals\CPUSTRES64.EXE"
+            Start-Process $location"\tools\SystemInternals\CPUSTRES64.EXE" -Wait -verb runas
+
             $test= $true
         }
 
@@ -231,13 +237,15 @@ function getstorage {
     switch (Read-Host "  What test to perform ?") {
         '1' {
             # https://diskwipe.org/ 
-            & $location"\tools\Diskhandling\DiskWipe.exe"
+            #& $location"\tools\Diskhandling\DiskWipe\DiskWipe.exe" 
+            Start-Process -FilePath $location"\tools\Diskhandling\DiskWipe\DiskWipe.exe"  -Wait -verb runas
             $test= $true
         }
 
         '2' {
             # https://www.hwinfo.com/ 
-            & $location"\tools\systemdiagnostics\HWInfo\HWiNFO64.exe"
+            #& $location"\tools\systemdiagnostics\HWInfo\HWiNFO64.exe" 
+            Start-Process -FilePath $location"\tools\systemdiagnostics\HWInfo\HWiNFO64.exe"  -Wait -verb runas
             $test= $true
         }
 
@@ -299,18 +307,21 @@ function getautopilot {
 function debloat {
     Clear-Host
     Write-Host "  ==> Win Debloater "
-    Write-Host "      Wait until program starts... "         
-    Invoke-RestMethod https://christitus.com/win | Invoke-Expression 
-    pause
+    Invoke-RestMethod -Uri 'https://christitus.com/win'  | Invoke-Expression  
+
+    Write-Host "      Wait until program starts... "  
+    Pause
 }
 
 # B *****************************
 function activwin {
     Clear-Host
     Write-Host "  ==> Win Activation license"
-    Write-Host "      Wait until program starts... "
-    Invoke-RestMethod https://get.activated.win | Invoke-Expression 
-    pause     
+    Invoke-RestMethod -Uri 'https://get.activated.win' | Invoke-Expression 
+    
+    Write-Host "      Wait until program starts... "  
+    Pause
+
 }
 
 # C *****************************
@@ -551,12 +562,14 @@ while($Value -ne 'x')
 
         'a' {
             #'Debloater'
-            debloat
+            debloat 
+            Pause
         }
 
         'b' {
             #'Win Activation script'
             activwin
+            Pause
         }
   
         'c' {

@@ -31,7 +31,5 @@ Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -Force
 
 upgPowershell
 
-#Start-Process powershell -File "Diagnostics.ps1" -verb runas
-
 $PSScriptRoot
 & "$PSScriptRoot\Diagnostics.ps1"  -verb runas
