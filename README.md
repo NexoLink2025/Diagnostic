@@ -6,7 +6,7 @@
 - Run   `start.ps1` in powershell
 
 
-<h4> Obs:  Need to have powershell 7
+<h4> Obs:  Need to have powershell 7 </h4>
 
 
 ![start.png](Images/start.png)
