@@ -1,19 +1,37 @@
-#!/bin/bash
-# init
-function pause(){
-   read -p "$*"
+
+function upgPowershell {
+
+    Clear-Host 
+    Write-Host "  ==> Powershell version" 
+    #$PSVersionTable
+
+    $newPS = $PSVersionTable.PSVersion.Major
+    if ($newPS -Like 7) {
+        #$PSVersionTable.PSVersion
+        #pause
+    }
+    else{
+		Write-Host ""
+        $getnewPS = Read-Host "Do you whant to install the latest PowerShell ? [Y/N]"
+        if ($getnewPS -icontains  'Y'){
+            Write-Host "  ==> Upgrading Powershell" 
+                winget install --id Microsoft.Powershell --source winget
+            pause
+        }
+    }
 }
- 
+
 #  change the keyboard layout in Windows 11
-    Get-WinUserLanguageList
-    Set-WinUserLanguageList sv-SE
-    
+   # Get-WinUserLanguageList
+   # Set-WinUserLanguageList sv-SE
 
-#pause 'Press [Enter] key to continue...'
 
-pwd
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -Force
+#Get-ExecutionPolicy -List
 
-Start-Process powershell -File "Y:\Diagnostics\Diagnostics.ps1" -verb runas
+upgPowershell
 
-#start-process powershell -verb runas 
+#Start-Process powershell -File "Diagnostics.ps1" -verb runas
 
+$PSScriptRoot
+& "$PSScriptRoot\Diagnostics.ps1"  -verb runas

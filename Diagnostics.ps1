@@ -1,5 +1,7 @@
 ﻿# Functions --------------------------------------------------------------------
 
+
+# General functions --------------------------
 function tobecontinued{
       Write-Host ""
       Read-Host "=====>>  Enter any key to continue  :-) "
@@ -7,213 +9,423 @@ function tobecontinued{
 
 }
 
+function USBformatAdmin{
+
+    Get-ExecutionPolicy -List
+    #Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -Force
+
+
+    #Set-ExecutionPolicy -ExecutionPolicy Restricted   -Scope CurrentUser -Force 
+    #Set-ExecutionPolicy -ExecutionPolicy AllSigned -Scope CurrentUser
+    #Start-Sleep -s 5
+
+    # Self-elevate the script if required
+
+    if (-Not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+       # https://powershellcommands.com/powershell-start-process-with-arguments
+        
+#        Start-Process powershell -FilePath $location"\Test_2.ps1"  
+  
+        Start-Process -FilePath "powershell.exe" -ArgumentList "-File $location\PS_GUI\USBclean.ps1" -Verb RunAs
+        #exit
+    } 
+}
+
+function  errorinfo {
+
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$result,
+        [string]$fl,
+        [string]$eqp,
+        [string]$devID
+    )
+
+    if ( $result -ieq  'y' )
+    {     
+        Add-Content -Path $fl -Value "`n$eqp Test for [ $devID ] is OK !!!`n"     
+    }else{
+
+        Add-Content -Path $fl -Value "`n$eqp Test for [ $devID ] is NOT OK !!!`n`n$WhatWasWrong"
+        Start-Process 'C:\WINDOWS\system32\notepad.exe' $fl
+        cmd /c start /wait notepad $fl
+    }
+
+  
+}
+
+
+
 # 1 *****************************
 function getbatteryinfo {
+    Clear-Host
     $file= $report_dir+'/batteryreport.html'
     Write-Host "  ==> Starting Battery report"
     powercfg /batteryreport /output $file
-    Start-Process $file    
-    #tobecontinued
+#    Start-Process $file    
+
 }
 
 # 2 *****************************
 function getdisplay {
-    $file= $report_dir+'/DisplayTest.txt'
+    Clear-Host
+    $file= $report_dir+'\DisplayTest.txt'
     Remove-Item $file
-      #Start-Transcript -Path "$report_dir/DisplayTest.txt"
-      #Stop-Transcript 
 
-    clear 
+    Clear-Host 
+
     Write-Host "  ==> Starting Checking Display"
 
     cmd /c start /wait "https://testmyscreen.com/"
 
+    Write-Host ""
+    $displayresult = Read-Host "      Was Display checking OK [Y/N] ?"
+    errorinfo -result $displayresult -fl $file -eqp 'Display' -devID $deviceID
 
-    $displayresult = Read-Host "  Was Display checking OK [Y/N] ?"
-    if ( $displayresult -ieq  'y' )
-    {     
-         Add-Content -Path $file -Value "`nDispaly Test for [ $deviceID ] is OK !!!`n"
-     
-    }else{
-    
-         Add-Content -Path $file -Value "`nDispaly Test for [ $deviceID ] is NOT OK !!!`n`n$WhatWasWrong"
-         #Start-Process 'C:\WINDOWS\system32\notepad.exe' $file
-         cmd /c start /wait notepad $file
-    }
 }
 
 # 3 *****************************
 function getkeyboard {
-    
+    Clear-Host
     $file= $report_dir+'/KeyboardTest.txt'
     Remove-Item $file
       #Start-Transcript -Path "$report_dir/KeyboardTest.txt"
       #Stop-Transcript 
 
-    clear
+    Clear-Host
     Write-Host "  ==> Starting Checking Keyboard"
     #Start-Process "https://keyboard-tester.com/swedish-keyboard" -Wait
     cmd /c start /wait "https://keyboard-tester.com/swedish-keyboard"
 
+    Write-Host ""
+    $keybopardresult = Read-Host "      Was Keyboard checking OK [Y/N] ?"
+    errorinfo -result $keybopardresult -fl $file -eqp 'Keyboard' -devID $deviceID
 
-    
-    $keybopardresult = Read-Host "  Was Keyboard checking OK [Y/N] ?"
-    if ( $keybopardresult -ieq  'y' )
-    {     
-         #Out-File -FilePath $report_dir/DisplayTest.txt
-         Add-Content -Path $file -Value "`nKeyboard Test for [ $deviceID ] is OK !!!`n"
-     
-    }else{
-    
-         Add-Content -Path $file -Value "`nKeyboard Test for [ $deviceID ] is NOT OK !!!`n`n$WhatWasWrong"
-         #Start-Process 'C:\WINDOWS\system32\notepad.exe' $file
-         cmd /c start /wait notepad $file
-    }
-                  
 }
 
 # 4 *****************************
 function getwifi {
+    mkdir $report_dir\wifi -Force  
+    Clear-Host
     Write-Host "  ==> Starting Checking WiFi & Bluetooth "
-
+    Write-Host ""
+    Write-Host "      Wait until checkings are done... "
     # https://www.comparitech.com/net-admin/network-troubleshooting-tools/
 
+    Write-Host "  ->  NetAdapter_A"
+    Get-NetAdapter -Name * > $report_dir\wifi\NetAdapter_A.txt
 
-    Get-NetAdapter -Name * > $report_dir/NetAdapter_A.txt
+    Write-Host "  ->  NetAdapter_B"
+    Get-NetAdapter -Name '*' -IncludeHidden | Format-List -Property 'Name', 'InterfaceDescription', 'InterfaceName' > $report_dir\wifi\NetAdapter_B.txt
+    
+    Write-Host "  ->  NetIPConfiguration"
+    Get-NetIPConfiguration > $report_dir\wifi\NetIPConfiguration.txt
 
-    Get-NetAdapter -Name '*' -IncludeHidden | Format-List -Property 'Name', 'InterfaceDescription', 'InterfaceName' > $report_dir/NetAdapter_B.txt
-
-    Get-NetIPConfiguration > $report_dir/NetIPConfiguration.txt
-
-    netsh wlan show all > $report_dir/netsh_wlan.txt
-
+    Write-Host "  ->  netsh_wlan"
+    netsh wlan show all > $report_dir\wifi\netsh_wlan.txt
     #Get-PnpDevice -Class usb
     #Get-PnpDevice -Class Net 
-    Get-PnpDevice  > $report_dir/PnpDevices.txt          
+
+    Write-Host "  ->  PnpDevices"
+    Get-PnpDevice  > $report_dir\wifi\PnpDevices.txt          
 }
 
 
 # 5 *****************************
 function getcpustress {
- 
     $file= $report_dir+'/CPUstress.txt'
-    Remove-Item $file
+    Remove-Item $file -Force
+    $test= $false
 
-    clear
-    Write-Host "  ==> Starting Checking CPU/RAM Stress"
+    Clear-Host
 
-     #Start-Transcript -Path "$report_dir/CPUstress.txt"
-     #Stop-Transcript 
+    Write-Host ""
+    Write-Host " [1] OCCT        *"
+    Write-Host " [2] Prime95     *"
+    Write-Host " [3] CPUSTRES64  *"
+    Write-Host ""
+    switch (Read-Host "  What test to perform ?") {
+        '1' {
+            Write-Host "  ==> Starting OCCT tests"
+            Write-Host "      Save images as : OCCT_1.png  / OCCT_2.png  / OCCT_3.png "
+            Write-Host " "
+            Write-Host "      Wait until program loads... "
+            & $location"\tools\StressTest\OCCT\OCCT.exe"
+            $test= $true
 
+              # Get-ChildItem  -Name '*.png'
+        }
+        '2' {
+            Write-Host "  ==> Starting Prime95 tests"
+            Write-Host "      Wait until program loads... "
+            & $location"\tools\StressTest\Prime95\prime95.exe"
+            $test= $true
+        }
+        '3' {
+            Write-Host "  ==> Starting CPUSTRES64 tests"
+            Write-Host "      Wait until program loads... "
+            & $location"\tools\SystemInternals\CPUSTRES64.EXE"
+            # Start-Process $location"\tools\SystemInternals\CPUSTRES64.EXE" -NoNewWindow -Wait
+            #cmd /c start /wait $location"\tools\SystemInternals\CPUSTRES64.EXE" 
+            $test= $true
+        }
 
-    #& $location"\tools\SystemInternals\CPUSTRES64.EXE"
-    # Start-Process $location"\tools\SystemInternals\CPUSTRES64.EXE" -NoNewWindow -Wait
-    #cmd /c start /wait $location"\tools\SystemInternals\CPUSTRES64.EXE" 
-
-
-
-    & $location"\tools\StressTest\OCCT\OCCT.exe"
-
-
-#    & $location"\tools\StressTest\Prime95\prime95.exe"
-
-      
-      
-    $keybopardresult = Read-Host "  Was Checking CPU/RAM Stress [Y/N] ?"
-    if ( $keybopardresult -ieq  'y' )
-    {     
-         Out-File -FilePath $report_dir/CPUstress.txt
-         Add-Content -Path "$report_dir/CPUstress.txt" -Value "
-     
-         CPUstress for [ $deviceID ] is OK !!!" 
-
-    }else{
-    
-        Add-Content -Path $file -Value "`nCPUstress for [ $deviceID ] is not OK !!!`n`n$WhatWasWrong"
-
-        #Start-Process 'C:\WINDOWS\system32\notepad.exe' $file
-        cmd /c start /wait notepad $file
+        default {
+         Write-Host "** Not a valid choise :-( "
+         $test= $false
+        }
     }
-    
-          
+    Write-Host ""
+
+
+    if ($test){
+        $keybopardresult = Read-Host "      Was Checking CPU/RAM Stress OK ? [Y/N]"
+        errorinfo -result $keybopardresult -fl $file -eqp 'CPU/RAM Stress' -devID $deviceID
+    }
                   
 }
 
 
 # 6 *****************************
 function getramtest {
-
+    Clear-Host
     $file= $report_dir+'/RAMtest.txt'
     $file_csv = $report_dir+'/RAMtest.csv'
-    Remove-Item $file
-    Remove-Item $file_csv
-
-    clear
+    #Remove-Item $file
+    #Remove-Item $file_csv
     Write-Host "  ==> Starting Checking RAM "
 
 
-    Get-CimInstance -ClassName Win32_PhysicalMemory | Export-Csv -Path $file_csv -NoTypeInformation
-    Get-WmiObject Win32_PhysicalMemory > $file
-
-    Write-Host " Run mdsched.exe "
+    Write-Host "    Run mdsched.exe "
     # https://windowsreport.com/mdsched-exe-windows-10/
     # https://www.wintips.org/how-to-check-ram-size-speed-manufacturer-and-other-specs-in-windows-10-11/
+
     mdsched.exe
-                  
+    "Latest memory test results 
+*********************************************" > $file
+    Get-WinEvent -FilterHashTable @{LogName='System'; Id=1101,1201} -ErrorAction Ignore | Where {$_.ProviderName -Match 'MemoryDiagnostics-Results'} >> $file
+    "Win32_PhysicalMemory 
+*********************************************" >> $file
+    Get-WmiObject Win32_PhysicalMemory >> $file    
+
+    Get-CimInstance -ClassName Win32_PhysicalMemory | Export-Csv -Path $file_csv -NoTypeInformation
+
+             
+ 
 }
+
 
 
 # 7 *****************************
 function getstorage {
+    $file= $report_dir+'/Storage.txt'
+    Remove-Item $file -Force
+    $test= $false
+    Clear-Host
     Write-Host "  ==> Starting Checking Storage"
-            
-            
-  # https://www.windowscentral.com/how-test-hard-drive-performance-diskspd-windows-10
-  # https://www.techworm.net/2023/11/disk-speed-test-tool-windows-pc.html
+    Write-Host ""
+    Write-Host " [1] DiskWipe                             *"
+    Write-Host " [2] System Information and Diagnostics   *"
+    Write-Host " [3]                                      *"
+    Write-Host ""
+    switch (Read-Host "  What test to perform ?") {
+        '1' {
+            # https://diskwipe.org/ 
+            & $location"\tools\Diskhandling\DiskWipe.exe"
+            $test= $true
+        }
+
+        '2' {
+            # https://www.hwinfo.com/ 
+            & $location"\tools\systemdiagnostics\HWInfo\HWiNFO64.exe"
+            $test= $true
+        }
+
+    default {
+            Write-Host "** Not a valid choise :-( "
+            $test= $false
+            }
+    }
+    Write-Host ""
+
+
+    if ($test){
+        $keybopardresult = Read-Host "      Was Storage Checking OK ? [Y/N]"
+        errorinfo -result $keybopardresult -fl $file -eqp 'Storage check' -devID $deviceID
+    }
                   
 }
 
 
 # 8 *****************************
 function getcamera {
+    #https://www.thewindowsclub.com/use-powershell-to-find-and-disable-webcams
 
-    $file= $report_dir+'/Camera.txt'
+    Clear-Host
+    $file= $report_dir+'\Camera.txt'
     Remove-Item $file
-
     Write-Host "  ==> Starting Checking Camera"
 
-    (Get-CimInstance Win32_PnPEntity | where caption -match 'camera' ) > $file
+    Start-Transcript -Path $file -UseMinimalHeader
+        Get-CimInstance Win32_PnPEntity | Where-Object caption -match 'camera'
+   
+    
+    #$camera2 = 
+        Get-CimInstance Win32_PnPEntity | ? { $_.service -eq "usbvideo" } | Select-Object -Property PNPDeviceID, Name
+    #Add-Content -Path $file -Value "`n$camera2"
 
-    $camera2 = Get-CimInstance Win32_PnPEntity | ? { $_.service -eq "usbvideo" } | Select-Object -Property PNPDeviceID, Name
-    Add-Content -Path $file -Value "`n$camera2"
+     Stop-Transcript
 
-                  
 }
 
 # 9 *****************************        
 function getautopilot {
-    Write-Host "  ==> Starting Checking AutoPilot "
-                  
-}
+    Clear-Host
+    $file= $report_dir+'\Autopilot_info.txt'
+    Remove-Item $file
+        Write-Host "  ==> Starting Checking AutoPilot "
 
-
-# a *****************************
-function gettbd {
-    Write-Host "  ==> Starting Checking TBD "
-
+    #<#
+    Start-Transcript -Path $file -UseMinimalHeader
+        dsregcmd /status
+     Stop-Transcript 
+    ##>
+             
+     dsregcmd /status > $file
     
-    cmd /c start /wait notepad $report_dir\DisplayTest.txt
-                  
+}
+
+# A *****************************
+function debloat {
+    Clear-Host
+    Write-Host "  ==> Win Debloater "
+    Write-Host "      Wait until program starts... "         
+    Invoke-RestMethod https://christitus.com/win | Invoke-Expression 
+    pause
+}
+
+# B *****************************
+function activwin {
+    Clear-Host
+    Write-Host "  ==> Win Activation license"
+    Write-Host "      Wait until program starts... "
+    Invoke-RestMethod https://get.activated.win | Invoke-Expression 
+    pause     
+}
+
+# C *****************************
+function upgPowershell {
+   
+    
 }
 
 
-function scopeinfo{
+# D *****************************
+function formatUSB{
+    $file= $report_dir+'\USBlist.txt'
+    Clear-Host 
 
-    #Set-ExecutionPolicy -ExecutionPolicy Restricted   -Scope CurrentUser -Force 
-    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -Force
-    #Set-ExecutionPolicy -ExecutionPolicy AllSigned -Scope CurrentUser
-    #Start-Sleep -s 5
-    #tobecontinued
+    Write-Host "  ==> USB clear list" 
+    (Get-Disk | Where-Object -FilterScript {$_.Bustype -Eq "USB"} ) > $file
+    
+    USBformatAdmin
+
+
+    #diskmgmt.msc
+    
+    #Get-Disk | Where-Object -FilterScript {$_.Bustype -Eq "USB"} 
+<#
+   $drive1= (Get-Disk | Where-Object -FilterScript {($_.Bustype -Eq "USB" -and $_.number -Ne '0') } ).DiskNumber
+    $drive2= (Get-Disk | Where-Object -FilterScript {($_.Bustype -Eq "USB" -and $_.number -Ne '0') } ).BusType
+    $drive3= (Get-Disk | Where-Object -FilterScript {($_.Bustype -Eq "USB" -and $_.number -Ne '0') } ).AllocatedSize
+    $drive4= (Get-Disk | Where-Object -FilterScript {($_.Bustype -Eq "USB" -and $_.number -Ne '0') } ).Model 
+
+    #$drive = (get-disk -Number "1").BusType
+    Write-Host "      $drive2 [ $drive1 ]  $drive3  $drive4"
+
+
+    (
+    
+
+    Write-Host ""
+    Write-Host "**** Starting USB Formating ******"
+    Write-Host ""
+
+
+        switch ($disk= Read-Host "==>  Please enter your USB Number") {
+        '0' {
+             'Disk 0 CAN NOT be formated'
+             }
+        '1' {
+            Write-Host "Formating disk: "$disk
+
+            Clear-Disk -Number $disk -RemoveData -RemoveOEM -Confirm:$false  
+            New-Partition -DiskNumber $disk -UseMaximumSize | Format-Volume -FileSystem NTFS -NewFileSystemLabel myUSBDrive  
+            Get-Partition -DiskNumber $disk | Set-Partition -NewDriveLetter D 
+            }
+
+        '2' {
+            Write-Host "Formating disk: "$disk
+
+            Clear-Disk -Number $disk -RemoveData -RemoveOEM -Confirm:$false 
+            New-Partition -DiskNumber $disk -UseMaximumSize | Format-Volume -FileSystem NTFS -NewFileSystemLabel myUSBDrive
+            Get-Partition -DiskNumber $disk | Set-Partition -NewDriveLetter F
+            }
+        '3' {
+            Write-Host "Formating disk: "$disk
+
+            Clear-Disk -Number $disk -RemoveData -RemoveOEM -Confirm:$false 
+            New-Partition -DiskNumber $disk -UseMaximumSize | Format-Volume -FileSystem NTFS -NewFileSystemLabel myUSBDrive
+            Get-Partition -DiskNumber $disk | Set-Partition -NewDriveLetter G
+            }
+         default {
+             Write-Host " == " $disk" is not a valid choise - Bye  :-( "
+
+            }
+        }
+#>
+       
+       
+       # pause
+
+ 
+}
+
+
+# z *****************************
+function clearResults {
+        param (
+            [string]$phase
+        )
+
+    $file= $report_dir
+    Write-Host "  ==> Remove all files  $phase"
+
+    if ($phase -eq 'clearall'){
+        Remove-Item $file\wifi -Recurse
+        Remove-Item $file\*.*  
+        New-Item  -Path $report_dir'\SystemInfo.html' -ItemType File -Value "System Information and Diagnostics not performed yeat :-( )" -Force
+        Copy-Item -Path $location'\results.draft' -Destination $report_dir'\Results.html' -Recurse -Force
+    }else{
+        New-Item  -Path $report_dir'\SystemInfo.html' -ItemType File -Value "System Information and Diagnostics not performed yeat :-( )" 
+        Copy-Item -Path $location'\results.draft' -Destination $report_dir'\Results.html' -Recurse
+
+    }
+    
+}
+
+
+# R *****************************
+function TestResults {
+
+    Write-Host "  ==> Show Test Results"
+
+    Start-Process $report_dir'/batteryreport.html'
+    Start-Process $report_dir'/Results.html'
+
+<#  convert to pdf
+    https://www.softwaresagacity.com/2014/06/how-to-convert-hmtl-to-pdf-using-powershell/
+#>    
 
 }
 
@@ -221,62 +433,63 @@ function scopeinfo{
 
 $Value=0
 #$current_directory = $pwd.Path
-$WhatWasWrong = "`n=================================`n        What was wrong ?`n=================================`n"
+$WhatWasWrong = "=================================`n        What was wrong ?`n=================================`n"
 
 
 # Get existing drivers
-$driver = (Get-PSDrive).Name -match '^[a-z]$'
-Write-Host $driver
-if ( $driver -icontains  'Y' ){
-    $desktop = 'Y:\'
-    Write-Host "Directory  Y:\"
+#$driver = (Get-PSDrive).Name -match '^[a-z]$'
+$driver = $pwd.drive.name
+#Write-Host $driver
+
+if ( $driver -ine  'c' ){
+    $desktop = ''
+    Write-Host "Directory Not Equal C: "$desktop
 }else{
     #$desktop = [Environment]::GetFolderPath([Environment+SpecialFolder]::Desktop)
     $Desktop = [Environment]::GetFolderPath("Desktop")
-    Write-Host "ELSE Directory  C:\"
+    Write-Host "usind Directory: "$desktop
 }
 
-    clear
-
+    Clear-Host
+    Write-Host ""
+    $location   = "$desktop\Diagnostics"
     $deviceID = Read-Host "Enter Device Article ID or Serial"
 
-    $location   = "$desktop\Diagnostics"
-    $report_dir = "$desktop\Diagnostics\Reports\"+$deviceID
-    mkdir $report_dir
-    cd $location
-    cd $report_dir
-    ls
+    $report_dir = "$location\Reports\"+$deviceID
+    #mkdir $report_dir
+    New-Item $report_dir -ItemType "Directory" -Force
 
+    #Set-Location $location
+    Set-Location -Path $report_dir
+    #Get-ChildItem
 
+    clearResults -phase "newitem"
 
 while($Value -ne 'x')
 {
-  clear
-
-  #echo $location
+  Clear-Host
 
   Write-Host ""
   #Write-Host $location
-  Write-Host "*** TESTS ***  Device: [ " $deviceID " ]"
+  Write-Host "*** TESTS ******************************************************" -F DarkMagenta
+  Write-Host "*== Device : [ " $deviceID " ]`t                      "           -F DarkMagenta
+  Write-Host "*--Options-----------------------------------------------------*" -F DarkMagenta
+  Write-Host "* [1] Battery info               [A] Win Debloater             *"
+  Write-Host "* [2] Display                    [B] MS Activation Script      *"
+  Write-Host "* [3] Keyboard                   [C]                           *"            
+  Write-Host "* [4] WiFi and Bluetoouth        [D] Clear USB                 *"            
+  Write-Host "* [5] CPU/RAM Stress & Health    [E]                           *"
+  Write-Host "* [6] RAM tests                  [F]                           *"
+  Write-Host "* [7] Storage                    [G]                           *"
+  Write-Host "* [8] Camera                     [H]                           *"
+  Write-Host "* [9] Autopilot                                                *"
+  Write-Host "*                                [Z] Clear Results Report      *"
+  Write-Host "* [X] eXit                       [R] Show Test Results         *"
+  Write-Host "****************************************************************" -F DarkMagenta
+  Write-Host "                                                GedeAlm 2025/07 " -F DarkMagenta 
 
-  Write-Host "[1] Battery info"
-  Write-Host "[2] Display"
-  Write-Host "[3] Keyboard"
-  Write-Host "[4] WiFi and Bluetoouth"
-  Write-Host "[5] CPU/RAM Stress & Health  "
-  Write-Host "[6] RAM tests"
-  Write-Host "[7] TBD - Storage"
-  Write-Host "[8] Camera"
-  Write-Host "[9] TBD - Autopilot"
-  Write-Host "[a] TBD - "
-
-
-
-
-  Write-Host ""
-  Write-Host "[x] eXit"
-  Write-Host "*******************************"
-  Write-Host ""
+  #Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White"
+  #Write-Host "" 
 
     
    # $Value = Read-Host "Please enter your value"
@@ -284,7 +497,9 @@ while($Value -ne 'x')
     switch (Read-Host "Please enter your value") {
         'x' {
             Write-Host "bye  ! :-( "
+            Clear-Host
             exit
+
         }
 
         '1' {
@@ -335,10 +550,39 @@ while($Value -ne 'x')
         }
 
         'a' {
-            #'Check tbd'
-            gettbd
+            #'Debloater'
+            debloat
+        }
+
+        'b' {
+            #'Win Activation script'
+            activwin
         }
   
+        'c' {
+            #
+			
+        }
+
+        'd' {
+            #'Format disk'
+			formatUSB
+
+        }
+
+       'z' {
+            #'TestResults'
+			clearResults -phase "clearall"
+
+        }
+
+        'r' {
+            #'TestResults'
+			TestResults
+
+        }
+        
+
         default {
              Write-Host "** Not a valid choise - Bye  :-( "
              #Write-Host "bye  ! :-( "

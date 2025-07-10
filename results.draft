@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<p style="  position: absolute; right: 5ch" id="directory"></p><br/>
+	<script>
+	document.getElementById("directory").innerHTML = "report dir :  " + window.location.pathname;
+	</script>
+
+
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title>Test Results report</title>
+
+	<style type="text/css">
+		h1 { color: #11d8e8 }
+		h1.western { font-family: "Segoe UI Light"; font-size: 42pt }
+		h1.ctl { font-family: "Segoe UI Light"; font-size: 42pt }
+		p { color: #f0f0f0; font-family: "Segoe UI Light" }
+		h2 { color: #11eef4 }
+		h2.western {font-family: "Segoe UI Light"; font-size: 15pt }
+		h3.subchap {font-family: "Segoe UI Light"; color: #deaddead }
+		h2.cjk { font-family: "NSimSun"; font-size: 15pt }
+		h2.ctl { font-family: "Arial"; font-size: 15pt }
+		iframe { background-color: #f0f0f0c0; width: 110ch; height:20ch }
+		a {background-color: #f0f0f0c0; color:rgb(0, 4, 255); font-size: 13px; font-weight: bold }	
+		hr {background-color:rgba(247, 5, 25, 0.75); color:rgb(0, 4, 255); width:80%; text-align:center; margin-left:0 }
+
+	
+		button {
+			background-color: #f0f0f0c0;
+			border: none;
+			color: #0000ff;
+			font-weight: bold;
+			padding: 15px 10px;
+			text-align: center;
+			font-size: 13px;
+			cursor: pointer;
+			position:relative;left:90ch;
+		}
+
+		body {
+			font-family: Segoe UI Light;
+			letter-spacing: 0.02em;
+			background-color: #181818;
+			color: #F0F0F0;
+			margin-left: 5.5em;
+	
+		}
+	</style>
+
+</head>
+
+
+<body>
+
+<h1 class="western">
+	Tests Report 
+		<div id="current_date" style="font-size: 20px; font-weight: bold; position:relative;left:18ch;">
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+			<script>
+				const formattedDate = moment().format('YYYY-MM-DD');
+				document.getElementById("current_date").innerHTML = formattedDate;
+			</script>
+		</div>
+</h1>
+
+<div id="current_date" style="position:relative;left:100ch;">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script>
+        const formattedDate = moment().format('YYYY-MM-DD');
+        document.getElementById("current_date").innerHTML = formattedDate;
+    </script>
+</div>
+
+
+
+
+
+<button onclick="window.print();">CLICK HERE TO PRINT FORM!</button>
+<br/>
+
+<h2 class="western">[2] Display Test history </h2>
+<iframe src="DisplayTest.txt" title="Iframe Display"></iframe>
+<br/>
+
+<h2 class="western">[3] Keyboard Test history </h2>
+<iframe src="KeyboardTest.txt"  title="Iframe Keyboard"></iframe>
+<br/>
+
+<h2 class="western">[4] Wifi and Bluethooth Test history </h2>
+
+<h3 class="subchap">  wifi/NetAdapter_A.txt </h3>
+<iframe src="wifi/NetAdapter_A.txt" style="height:20ch" title="Iframe NetAdapter_A" ></iframe>
+
+<h3 class="subchap">  wifi/NetAdapter_B.txt </h3>
+<iframe src="wifi/NetAdapter_B.txt" style="height:40ch"  title="Iframe NetAdapter_B"></iframe>
+
+<h3 class="subchap">  wifi/NetIPConfiguration.txt </h3>
+<iframe src="wifi/NetIPConfiguration.txt" style="height:40ch" title="Iframe NetIPConfiguration"></iframe>
+
+<h3 class="subchap">  wifi/netsh_wlan.txt </h3>
+<iframe src="wifi/netsh_wlan.txt" style="height:40ch" title="Iframe netsh_wlan"></iframe>
+
+<h3 class="subchap"> - wifi/PnpDevices.txt </h3>
+<iframe src="wifi/PnpDevices.txt" style="height:40ch" title="Iframe PnpDevices"></iframe>
+<br/>
+
+<h2 class="western">[5] CPU/RAM Test history </h2>
+	<hr>
+	<h3 class="subchap">OCCT test 1</h3>
+	<img src="OCCT_1.png" alt="N/A OCCT 1" width="80%"  >
+	<hr>
+	<h3 class="subchap">OCCT test 2</h3>
+	<img src="OCCT_2.png" alt="N/A OCCT 2" width="80%"  >
+	<hr>
+	<h3 class="subchap">OCCT test 3</h3>
+	<img src="OCCT_3.png" alt="N/A OCCT 3" width="80%"  >
+	<hr>
+<br/>
+
+<h2 class="western">[6] CPU/RAM Test history </h2>
+<iframe src="RAMtest.txt" style="height:90ch" title="Iframe Display"></iframe>
+<br/>
+<br/>
+<button><a href="RAMtest.csv" >Open RAMTest csv file!</a></button>
+
+<br/>
+<br/>
+
+
+<h2 class="western">[7] Storage Test history </h2>
+<button style=" position: absolute;left: 13ch;"><a href="SystemInfo.html" >Open System Diagnostics file!</a></button>
+<br/>
+<br/>
+
+
+
+<h2 class="western">[8] Camera Test history </h2>
+<iframe src="Camera.txt" style="height:90ch" title="Iframe Camera"></iframe>
+
+<br/>
+
+<h2 class="western">[9] Autopilot Test history </h2>
+<iframe src="Autopilot_info.txt" style="height:150ch" title="Iframe Autopilot"></iframe>
+
+<br/>
+
+</body>
+</html>
+
